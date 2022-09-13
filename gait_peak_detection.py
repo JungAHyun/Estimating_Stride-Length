@@ -21,6 +21,21 @@ def peak_detection(left_data, right_data):
     left_peaks, _ = find_peaks(left_data, distance=25)
     right_peaks, _ = find_peaks(right_data,  distance=25)
 
+    
+    if left_peaks[1] - left_peaks[0] > 50:
+        left_peaks = np.delete(left_peaks, 0)
+    elif left_peaks[-1] - left_peaks[-2] > 50:
+        left_peaks = np.delete(left_peaks, -1)
+    
+
+    if right_peaks[1] - right_peaks[0] > 50:
+        print('in')
+        right_peaks = np.delete(right_peaks, 0)
+    elif right_peaks[-1] - right_peaks[-2] > 50:
+        right_peaks = np.delete(right_peaks, -1)
+    
+    
+
     print('left', left_peaks)
     print('right', right_peaks)
 
@@ -33,6 +48,9 @@ def peak_detection(left_data, right_data):
     plt.show()
 
     return left_peaks, right_peaks
+
+
+
 
 if __name__ == '__main__':
 
