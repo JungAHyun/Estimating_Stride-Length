@@ -7,8 +7,8 @@ import csv
 name = '공예은'
 path = 'Stride_length_experiment_stride_count_feature_extraction.xlsx'
  
-
-
+r_cnt = 0
+l_cnt = 0
 
 def get_csv(usecols):
     df = pd.read_excel(path, sheet_name=name , usecols = [usecols, usecols+1], skiprows = 1)  #앞의 2행 생략
@@ -21,7 +21,26 @@ def get_csv(usecols):
     return left_data, right_data
 
 
-# 
+
+def peaks_save_csv(left, right, id,):
+    global r_cnt 
+    global l_cnt 
+
+    f = open('save_test.csv', 'a', encoding='utf-8', newline='')
+    wr = csv.writer(f)
+
+    for data in left:
+        wr.writerow([id, f'{"L"}{l_cnt}', data])
+        l_cnt+=1
+
+    for data in right:
+        wr.writerow([id, f'{"R"}{r_cnt}', data])
+        r_cnt+=1
+
+
+    f.close()
+
+
 
 def peak_detection(left_data, right_data):
     left_peaks, _ = find_peaks(left_data, distance=25)
@@ -111,7 +130,9 @@ def toe_off_detection(left_data, right_data):
 
 
 
-   
+def data_integration(lp, rp, lhc, rhc, lto, rto):
+    
+
         
     
 
@@ -119,20 +140,24 @@ def toe_off_detection(left_data, right_data):
 
 if __name__ == '__main__':
 
+    id = 1
+    save_start = 2
+    save_end = 182
+    peaks = []
+
     for i in range(0,24,2):
         usecols = i
 
         left_data, right_data = get_csv(usecols)
 
-        # left_peaks, right_peaks= peak_detection( np.array(left_data),np.array(right_data))
-        # left_heel_contect, right_heel_contect = heel_contact_detection(left_data, right_data)
+        left_peaks, right_peaks= peak_detection( np.array(left_data),np.array(right_data))
+        left_heel_contect, right_heel_contect = heel_contact_detection(left_data, right_data)
         left_toe_off, right_toe_off = toe_off_detection(left_data, right_data)
 
-        print(i,'번째 l : ', left_toe_off)
-        print(i,'번째 r: ', right_toe_off)
+        data_integration(left_peaks, right_peaks, left_heel_contect, right_heel_contect, left_toe_off, right_toe_off)
 
-    
 
+        save_csv(left_peaks, right_peaks, 1, 2, 182)        #(left_data, right_data, id, start, end)
     
 
     
