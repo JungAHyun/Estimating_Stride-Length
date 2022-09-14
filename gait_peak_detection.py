@@ -6,7 +6,6 @@ import csv
 
 name = '정승민'
 id = 10
-
 path = '(노이즈제거본)Stride_length_experiment_stride_count_feature_extraction.xlsx'
 
 
@@ -101,7 +100,7 @@ def peak_detection(left_data, right_data):
 
 
 # heel_contact 추출
-def heel_contact_detection(left_data, right_data):
+def heel_contact_detection(left_data, right_data, left_end1, right_end1, left_end2, right_end2,):
     index = 0
     left_heel_contect = []
     right_heel_contect = []
@@ -119,6 +118,11 @@ def heel_contact_detection(left_data, right_data):
             index += 70
         else:
             index+=1
+    
+    if (len(left_heel_contect) > left_end1 or len(left_heel_contect)!= left_end2):
+        del left_heel_contect[-1]
+    if (len(right_heel_contect)> right_end1 or len(right_heel_contect)!= right_end2):
+        del right_heel_contect[-1]
 
     return left_heel_contect, right_heel_contect
         
@@ -173,42 +177,56 @@ def data_integration(lp, rp, lhc, rhc, lto, rto):
     p_cnt=0
     to_cnt=0
 
-    print('lp: ', lp)
-    print('rp: ', rp)
-    print('lhc: ', lhc)
-    print('rhc: ', rhc)
-    print('lto: ', lto)
-    print('rto: ', rto)
+    print('lp: ', lp, ':: len', len(lp))
+    print('rp: ', rp, ':: len', len(rp))
+    print('lhc: ', lhc, ':: len', len(lhc))
+    print('rhc: ', rhc, ':: len', len(rhc))
+    print('lto: ', lto, ':: len', len(lto))
+    print('rto: ', rto, ':: len', len(rto))
+
+    left_end = (len(lp)/2)*4
+    right_end = (len(rp)/2)*4
+
+    while(cnt < left_end):
+        if cnt % 4 == 1:
+            l_data.append(lhc[hc_cnt])
+            hc_cnt+=1
+            cnt +=1
+
+        elif cnt % 4 == 2:
+            l_data.append(lp[p_cnt])
+            l_data.append(lp[p_cnt+1])
+            p_cnt+=2
+            cnt +=2
+
+        elif cnt % 4 == 0:
+            l_data.append(lto[to_cnt])
+            to_cnt+=1
+            cnt +=1
+    
+
+    cnt = 1
+    hc_cnt = 0
+    p_cnt=0
+    to_cnt=0
+    while(cnt < right_end):
+        if cnt % 4 == 1:
+            r_data.append(rhc[hc_cnt])
+            hc_cnt+=1
+            cnt +=1
+        elif cnt % 4 == 2:
+            r_data.append(rp[p_cnt])
+            r_data.append(rp[p_cnt+1])
+            p_cnt+=2
+            cnt +=2
+        elif cnt % 4 == 0:
+            r_data.append(rto[to_cnt])
+            to_cnt+=1
+            cnt +=1
 
 
-    while(cnt < max(len(lp)/2, len(rp)/2) +max(len(lto),len(rto) )+max(len(lhc),len(rhc))+2):
-        # try:
-            if cnt % 4 == 1:
-                l_data.append(lhc[hc_cnt])
-                r_data.append(rhc[hc_cnt])
-                hc_cnt+=1
-                cnt +=1
-
-            elif cnt % 4 == 2:
-                l_data.append(lp[p_cnt])
-                l_data.append(lp[p_cnt+1])
-                r_data.append(rp[p_cnt])
-                r_data.append(rp[p_cnt+1])
-                p_cnt+=2
-                cnt +=2
-
-            elif cnt % 4 == 0:
-                l_data.append(lto[to_cnt])
-                r_data.append(rto[to_cnt])
-                to_cnt+=1
-                cnt +=1
-        
-        # except IndexError:
-            # break
-
-
-    print('l_data: ',l_data)
-    print('r_data: ',r_data)
+    print('l_data: ',l_data, ':: len', len(l_data))
+    print('r_data: ',r_data, ':: len', len(r_data))
 
     return l_data, r_data
 
@@ -222,20 +240,22 @@ def data_integration(lp, rp, lhc, rhc, lto, rto):
 if __name__ == '__main__':
 
 
-
     for i in range(0,24,2):
         usecols = i
 
         left_data, right_data = get_csv(usecols)
 
         left_peaks, right_peaks= peak_detection( np.array(left_data),np.array(right_data))
-        left_heel_contect, right_heel_contect = heel_contact_detection(left_data, right_data)
         left_toe_off, right_toe_off = toe_off_detection(left_data, right_data)
+        left_heel_contect, right_heel_contect = heel_contact_detection(left_data, right_data, len(left_peaks)/2, len(right_peaks)/2, len(left_toe_off), len(right_toe_off))
+        
         
 
         l_data,r_data = data_integration(left_peaks, right_peaks, left_heel_contect, right_heel_contect, left_toe_off, right_toe_off)
         save_csv(l_data, r_data, id)        #(left_data, right_data, id, start, end)
-    
+
+
+
 
     
     
