@@ -5,8 +5,10 @@ from scipy.signal import find_peaks
 import csv   
 
 name = '공예은'
+id = 2
 path = 'Stride_length_experiment_stride_count_feature_extraction.xlsx'
- 
+
+
 r_cnt = 0
 l_cnt = 0
 
@@ -22,26 +24,49 @@ def get_csv(usecols):
 
 
 
-def peaks_save_csv(left, right, id,):
-    global r_cnt 
-    global l_cnt 
-
+def save_csv(left, right, id):
+    global r_cnt, l_cnt, cnt 
+    cnt = 1
     f = open('save_test.csv', 'a', encoding='utf-8', newline='')
     wr = csv.writer(f)
 
     for data in left:
-        wr.writerow([id, f'{"L"}{l_cnt}', data])
-        l_cnt+=1
+            if cnt % 4 == 1:
+                wr.writerow([id, f'{"L"}{l_cnt}{"_H"}', data])
+                cnt +=1
+            elif cnt % 4 == 2:
+                wr.writerow([id, f'{"L"}{l_cnt}{"_1"}', data])
+                cnt +=1
+            elif cnt % 4 == 3:    
+                wr.writerow([id, f'{"L"}{l_cnt}{"_2"}', data])
+                cnt +=1
+            elif cnt % 4 == 0:
+                wr.writerow([id, f'{"L"}{l_cnt}{"_T"}', data])
+                l_cnt+=1
+                cnt +=1
 
+    cnt = 1
     for data in right:
-        wr.writerow([id, f'{"R"}{r_cnt}', data])
-        r_cnt+=1
-
+        if cnt % 4 == 1:
+            wr.writerow([id, f'{"R"}{l_cnt}{"_H"}', data])
+            cnt +=1
+        elif cnt % 4 == 2:
+            wr.writerow([id, f'{"R"}{l_cnt}{"_1"}', data])
+            cnt +=1
+        elif cnt % 4 == 3:    
+            wr.writerow([id, f'{"R"}{l_cnt}{"_2"}', data])
+            cnt +=1
+        elif cnt % 4 == 0:
+            wr.writerow([id, f'{"R"}{l_cnt}{"_T"}', data])
+            r_cnt+=1
+            cnt +=1
+        
+    wr.writerow(['X', 'X', 'X'])
 
     f.close()
 
 
-
+# peak 추출
 def peak_detection(left_data, right_data):
     left_peaks, _ = find_peaks(left_data, distance=25)
     right_peaks, _ = find_peaks(right_data,  distance=25)
@@ -74,6 +99,7 @@ def peak_detection(left_data, right_data):
     return left_peaks, right_peaks
 
 
+# heel_contact 추출
 def heel_contact_detection(left_data, right_data):
     index = 0
     left_heel_contect = []
@@ -96,15 +122,16 @@ def heel_contact_detection(left_data, right_data):
     return left_heel_contect, right_heel_contect
         
 
-
+# toe_off 추출
 def toe_off_detection(left_data, right_data):
-    index = 0
+    index = 30
     left_toe_off = []
     right_toe_off = []
     toe_off_cnt = 0
 
     while(index+5<len(left_data)):
-        if (left_data[index]+left_data[index+1]+left_data[index+2]+left_data[index+3] == 0) and toe_off_cnt == 0:
+        # if left_data[index]<50 and left_data[index+1]<50 and left_data[index+2] and left_data[index+3] < 50 :       #이현영
+        if (left_data[index]+left_data[index+1]+left_data[index+2]+left_data[index+3] == 0) and toe_off_cnt == 0:                     #다른 피험자
             left_toe_off.append(index+1)
             toe_off_cnt = 1
             index+=40
@@ -113,10 +140,11 @@ def toe_off_detection(left_data, right_data):
 
         index+=1
     
-    index = 0    
-    toe_off_cnt = 0   
+    index = 30    
+    toe_off_cnt = 0
     while(index+5<len(right_data)):
-        if (right_data[index]+right_data[index+1]+right_data[index+2]+right_data[index+3] == 0) and toe_off_cnt == 0:
+        # if right_data[index] <50 and right_data[index+1] < 50 and right_data[index+2] < 50 and right_data[index+3] < 50 :               #이현영
+        if (right_data[index]+right_data[index+1]+right_data[index+2]+right_data[index+3] == 0) and toe_off_cnt == 0:               #다른 피험자
             right_toe_off.append(index+1)
             toe_off_cnt = 1
             index+=40
@@ -129,8 +157,56 @@ def toe_off_detection(left_data, right_data):
     return left_toe_off, right_toe_off
 
 
-
+# 보행 데이터 정렬 및 통합
 def data_integration(lp, rp, lhc, rhc, lto, rto):
+
+    cnt = 1
+    l_data = []
+    r_data = []
+
+    hc_cnt = 0
+    p_cnt=0
+    to_cnt=0
+
+    print('lp: ', lp)
+    print('rp: ', rp)
+    print('lhc: ', lhc)
+    print('rhc: ', rhc)
+    print('lto: ', lto)
+    print('rto: ', rto)
+
+    
+    while(1):
+        try:
+            if cnt % 4 == 1:
+                l_data.append(lhc[hc_cnt])
+                r_data.append(rhc[hc_cnt])
+                hc_cnt+=1
+                cnt +=1
+
+            elif cnt % 4 == 2:
+                l_data.append(lp[p_cnt])
+                l_data.append(lp[p_cnt+1])
+                r_data.append(rp[p_cnt])
+                r_data.append(rp[p_cnt+1])
+                p_cnt+=2
+                cnt +=2
+
+            elif cnt % 4 == 0:
+                l_data.append(lto[to_cnt])
+                r_data.append(rto[to_cnt])
+                to_cnt+=1
+                cnt +=1
+        
+        except IndexError:
+            break
+
+
+    print('l_data: ',l_data)
+    print('r_data: ',r_data)
+
+    return l_data, r_data
+
     
 
         
@@ -140,10 +216,6 @@ def data_integration(lp, rp, lhc, rhc, lto, rto):
 
 if __name__ == '__main__':
 
-    id = 1
-    save_start = 2
-    save_end = 182
-    peaks = []
 
     for i in range(0,24,2):
         usecols = i
@@ -153,11 +225,10 @@ if __name__ == '__main__':
         left_peaks, right_peaks= peak_detection( np.array(left_data),np.array(right_data))
         left_heel_contect, right_heel_contect = heel_contact_detection(left_data, right_data)
         left_toe_off, right_toe_off = toe_off_detection(left_data, right_data)
+        
 
-        data_integration(left_peaks, right_peaks, left_heel_contect, right_heel_contect, left_toe_off, right_toe_off)
-
-
-        save_csv(left_peaks, right_peaks, 1, 2, 182)        #(left_data, right_data, id, start, end)
+        l_data,r_data = data_integration(left_peaks, right_peaks, left_heel_contect, right_heel_contect, left_toe_off, right_toe_off)
+        save_csv(l_data, r_data, id)        #(left_data, right_data, id, start, end)
     
 
     
