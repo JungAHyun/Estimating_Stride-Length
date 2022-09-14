@@ -4,13 +4,14 @@ import pandas as pd
 from scipy.signal import find_peaks
 import csv   
 
-name = '공예은'
-id = 2
-path = 'Stride_length_experiment_stride_count_feature_extraction.xlsx'
+name = '정승민'
+id = 10
+
+path = '(노이즈제거본)Stride_length_experiment_stride_count_feature_extraction.xlsx'
 
 
-r_cnt = 0
-l_cnt = 0
+r_cnt = 1
+l_cnt = 1
 
 def get_csv(usecols):
     df = pd.read_excel(path, sheet_name=name , usecols = [usecols, usecols+1], skiprows = 1)  #앞의 2행 생략
@@ -27,7 +28,7 @@ def get_csv(usecols):
 def save_csv(left, right, id):
     global r_cnt, l_cnt, cnt 
     cnt = 1
-    f = open('save_test.csv', 'a', encoding='utf-8', newline='')
+    f = open('gait_data.csv', 'a', encoding='utf-8', newline='')
     wr = csv.writer(f)
 
     for data in left:
@@ -48,16 +49,16 @@ def save_csv(left, right, id):
     cnt = 1
     for data in right:
         if cnt % 4 == 1:
-            wr.writerow([id, f'{"R"}{l_cnt}{"_H"}', data])
+            wr.writerow([id, f'{"R"}{r_cnt}{"_H"}', data])
             cnt +=1
         elif cnt % 4 == 2:
-            wr.writerow([id, f'{"R"}{l_cnt}{"_1"}', data])
+            wr.writerow([id, f'{"R"}{r_cnt}{"_1"}', data])
             cnt +=1
         elif cnt % 4 == 3:    
-            wr.writerow([id, f'{"R"}{l_cnt}{"_2"}', data])
+            wr.writerow([id, f'{"R"}{r_cnt}{"_2"}', data])
             cnt +=1
         elif cnt % 4 == 0:
-            wr.writerow([id, f'{"R"}{l_cnt}{"_T"}', data])
+            wr.writerow([id, f'{"R"}{r_cnt}{"_T"}', data])
             r_cnt+=1
             cnt +=1
         
@@ -130,7 +131,7 @@ def toe_off_detection(left_data, right_data):
     toe_off_cnt = 0
 
     while(index+5<len(left_data)):
-        # if left_data[index]<50 and left_data[index+1]<50 and left_data[index+2] and left_data[index+3] < 50 :       #이현영
+        #if left_data[index]<50 and left_data[index+1]<50 and left_data[index+2] and left_data[index+3] < 50 and toe_off_cnt == 0:       #이현영
         if (left_data[index]+left_data[index+1]+left_data[index+2]+left_data[index+3] == 0) and toe_off_cnt == 0:                     #다른 피험자
             left_toe_off.append(index+1)
             toe_off_cnt = 1
@@ -143,7 +144,7 @@ def toe_off_detection(left_data, right_data):
     index = 30    
     toe_off_cnt = 0
     while(index+5<len(right_data)):
-        # if right_data[index] <50 and right_data[index+1] < 50 and right_data[index+2] < 50 and right_data[index+3] < 50 :               #이현영
+        #if right_data[index] <50 and right_data[index+1] < 50 and right_data[index+2] < 50 and right_data[index+3] < 50 and toe_off_cnt == 0:                 #이현영
         if (right_data[index]+right_data[index+1]+right_data[index+2]+right_data[index+3] == 0) and toe_off_cnt == 0:               #다른 피험자
             right_toe_off.append(index+1)
             toe_off_cnt = 1
@@ -153,6 +154,10 @@ def toe_off_detection(left_data, right_data):
 
         index+=1
     
+    if 31 in left_toe_off:
+        left_toe_off.remove(31)
+    elif 31 in right_toe_off:
+        right_toe_off.remove(31)
 
     return left_toe_off, right_toe_off
 
@@ -175,9 +180,9 @@ def data_integration(lp, rp, lhc, rhc, lto, rto):
     print('lto: ', lto)
     print('rto: ', rto)
 
-    
-    while(1):
-        try:
+
+    while(cnt < max(len(lp)/2, len(rp)/2) +max(len(lto),len(rto) )+max(len(lhc),len(rhc))+2):
+        # try:
             if cnt % 4 == 1:
                 l_data.append(lhc[hc_cnt])
                 r_data.append(rhc[hc_cnt])
@@ -198,8 +203,8 @@ def data_integration(lp, rp, lhc, rhc, lto, rto):
                 to_cnt+=1
                 cnt +=1
         
-        except IndexError:
-            break
+        # except IndexError:
+            # break
 
 
     print('l_data: ',l_data)
@@ -215,6 +220,7 @@ def data_integration(lp, rp, lhc, rhc, lto, rto):
 
 
 if __name__ == '__main__':
+
 
 
     for i in range(0,24,2):
