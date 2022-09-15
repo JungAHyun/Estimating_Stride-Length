@@ -55,17 +55,29 @@ def save_csv(left, right, id, main, lp, rp):
             wr.writerow([id, f'{"L"}{l_cnt}{"_2"}', left[index]])
             cnt +=1
             index+=1
-        elif cnt % 4 == 0:
-            wr.writerow([id, f'{"L"}{l_cnt}{"_T"}', left[index]])
+        # elif cnt % 4 == 0:
+        #     wr.writerow([id, f'{"L"}{l_cnt}{"_T"}', left[index]])
 
-            if (main =='right foot' and same == 'no'and i == len(left)-2) or (main =='left foot' and same == 'yes' and i == len(left)-2):
-                wr.writerow([id, f'{"L"}{l_cnt}{"_H"}', left[index+1]])
-                index+=1
+        #     if (main =='right foot' and same == 'no'and i == len(left)-2) or (main =='left foot' and same == 'yes' and i == len(left)-2):
+        #         wr.writerow([id, f'{"L"}{l_cnt}{"_H"}', left[index+1]])
+        #         index+=1
            
-            index+=1
-            l_cnt+=1
-            cnt +=1
+        #     index+=1
+        #     l_cnt+=1
+        #     cnt +=1
 
+        elif cnt % 4 == 0:
+            if (main =='right foot' and same == 'no'and index == len(left)-2) or (main =='left foot' and same == 'yes' and index == len(left)-2):
+                wr.writerow([id, f'{"L"}{l_cnt}{"_T"}', left[index]])
+                wr.writerow([id, f'{"L"}{l_cnt}{"_H"}', left[index+1]])
+                l_cnt+=1
+                cnt +=1
+                break
+            else:
+                wr.writerow([id, f'{"L"}{l_cnt}{"_T"}', left[index]])
+                index+=1
+                l_cnt+=1
+                cnt +=1
 
     # main이 오른발 왼발이고 개수가 같거나, main이 왼발이고 개수가 다르면, 오른발 편도의 마지막 저장이 HC-1-2-T0-HC
     index=0
@@ -85,17 +97,19 @@ def save_csv(left, right, id, main, lp, rp):
         elif cnt % 4 == 3:    
             wr.writerow([id, f'{"R"}{r_cnt}{"_2"}', right[index]])
             cnt +=1
-        elif cnt % 4 == 0:
-            wr.writerow([id, f'{"R"}{l_cnt}{"_T"}', right[index]])
-
-            if (main =='right foot' and same == 'yes' and index == len(right)-2) or (main =='left foot' and same == 'no' and index == len(right)-2):
-                wr.writerow([id, f'{"R"}{r_cnt}{"_H"}', right[index+1]])
-                index+=1
-           
             index+=1
-            r_cnt+=1
-            cnt +=1
-   
+        elif cnt % 4 == 0:
+            if (main =='right foot' and same == 'yes' and index == len(right)-2) or (main =='left foot' and same == 'no' and index == len(right)-2):
+                wr.writerow([id, f'{"R"}{r_cnt}{"_T"}', right[index]])
+                wr.writerow([id, f'{"R"}{r_cnt}{"_H"}', right[index+1]])
+                r_cnt+=1
+                cnt +=1
+                break
+            else:
+                wr.writerow([id, f'{"R"}{r_cnt}{"_T"}', right[index]])
+                index+=1
+                r_cnt+=1
+                cnt +=1
 
     wr.writerow(['X', 'X', 'X'])
     f.close()
@@ -257,6 +271,8 @@ def data_integration(lp, rp, lhc, rhc, lto, rto, main):
 
     print('l_data: ',l_data)
     print('r_data: ',r_data)
+
+    
     return l_data, r_data
     
         
@@ -281,7 +297,8 @@ if __name__ == '__main__':
         l_cnt = 1
         
         name = names[id]
-
+        print('')
+        print(id, ': ', name, '-----------------------------------------------------------------------')       
         #편도(one-way) 1,3: 오른발 출발  2,4: 왼발 출발
         for i in range(0,24,2):
             usecols = i
@@ -308,3 +325,7 @@ if __name__ == '__main__':
                 oneway = 1
             else:
                 oneway +=1
+
+            print('-------------------편도 구분선--------------------')
+
+       
