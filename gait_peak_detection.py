@@ -27,7 +27,7 @@ def save_csv(left, right, id, main, lp, rp):
 
     cnt = 1
     index=0
-    f = open('gait_data.csv', 'a', encoding='utf-8', newline='')
+    f = open('(확인용)gait_data.csv', 'a', encoding='utf-8', newline='')
     wr = csv.writer(f)
 
     #왼, 오 개수 같은지 확인
@@ -298,7 +298,7 @@ if __name__ == '__main__':
         
         name = names[id]
         print('')
-        print(id, ': ', name, '-----------------------------------------------------------------------')       
+        print(id, ': ', name, '-----------------------------------------------------------------------------------')       
         #편도(one-way) 1,3: 오른발 출발  2,4: 왼발 출발
         for i in range(0,24,2):
             usecols = i
@@ -323,9 +323,10 @@ if __name__ == '__main__':
         
             if oneway == 4:
                 oneway = 1
+                print('--------------------------횟수 구분 선---------------------------------')
             else:
                 oneway +=1
 
-            print('-------------------편도 구분선--------------------')
+            print('-------------------편도 ',oneway, ' 구분선--------------------')
 
        
