@@ -1,12 +1,11 @@
 
-from tokenize import PlainToken
 from tensorflow.keras.layers import Conv1D, Flatten, Dense, MaxPooling1D, Dropout, LSTM, BatchNormalization
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split   
 import tensorflow as tf
 from sklearn.metrics import mean_absolute_error, r2_score
-
+import tensorflow.keras.regularizers as reg
 
 gpus = tf.config.experimental.list_physical_devices('GPU')
 if gpus:
@@ -18,7 +17,7 @@ if gpus:
 
 path = '(input_data)Stride_length_training_test_dataset_for_CNN.xlsx'
 ver = 'Ver.1 (빈칸 0 처리)'
-def get_csv():
+def get_input_data():
     df = pd.read_excel(path, sheet_name=ver , skiprows = 1)  #앞의 2행 생략
     gait_data =  df.iloc[:, 3:139].to_numpy()
     stride_length_data = df.iloc[:, 139:140].to_numpy()
@@ -40,7 +39,7 @@ def get_csv():
 
 
 if __name__ == '__main__':
-    gait_data, stride_length_data = get_csv()
+    gait_data, stride_length_data = get_input_data()
 
 
     gait_data = gait_data.reshape(-1,136,1)
@@ -51,25 +50,27 @@ if __name__ == '__main__':
 
 
     model = tf.keras.Sequential()
-    model.add(Conv1D(filters=1024, kernel_size=8, padding='same', activation='elu', input_shape=(136,1))) #입력데이터 한줄에 136개, 총 558줄
-    model.add(Conv1D(filters=512, kernel_size=6, padding='same', activation='elu'))
+    model.add(Conv1D(filters=1024, kernel_size=2,padding='same', activation='selu', input_shape=(136,1)))
     model.add(MaxPooling1D(2))
-    model.add(Conv1D(filters=256, kernel_size=4, padding='same', activation='elu'))
-    model.add(Conv1D(filters=128, kernel_size=2, padding='same', activation='elu'))
-    model.add(Dense(1024, activation='elu'))
+    model.add(Conv1D(filters=1024, kernel_size=8, padding='same', activation='selu')) #입력데이터 한줄에 136개, 총 558줄
+    model.add(Conv1D(filters=1024, kernel_size=6, padding='same', activation='selu'))
+    model.add(MaxPooling1D(2))
+    model.add(Conv1D(filters=512, kernel_size=4, padding='same', activation='selu'))
+    model.add(Conv1D(filters=256, kernel_size=2, padding='same', activation='selu'))
+    model.add(MaxPooling1D(2))
+    model.add(Dense(1024, activation='selu'))
+    # model.add(LSTM(2, activation='elu', recurrent_activation='hard_sigmoid'))
     model.add(Flatten())
-    model.add(Dense(1024, activation='elu'))
-    model.add(Dense(1024, activation='elu'))
-    model.add(Dense(1024, activation='elu'))
-    model.add(Dense(1024, activation='elu'))
+    model.add(Dense(1024, activation='selu'))
+    model.add(Dense(1024, activation='selu'))
+    model.add(Dense(1024, activation='selu', kernel_regularizer=reg.L2(0.05)))
     model.add(Dense(1, activation=None))
-
     model.summary()
 
-    adam= tf.keras.optimizers.Adagrad (lr=0.0001)
+    adam= tf.keras.optimizers.Adam(lr=0.0001)
     
     model.compile(optimizer=adam, loss='mse', metrics=['mae'])
-    model.fit(x_train, y_train, epochs=500, shuffle=True, batch_size = 16)
+    model.fit(x_train, y_train, epochs= 500, shuffle=True, batch_size = 16)
 
     y_pred = model.predict(x_test)
     y_pred = y_pred.squeeze()
