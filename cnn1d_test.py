@@ -1,8 +1,5 @@
 
-from pickle import FALSE
-from matplotlib.cbook import flatten
-from tensorflow.keras.layers import Conv1D, Flatten, Dense, Input, MaxPooling1D
-from keras.models import Model
+from tensorflow.keras.layers import Conv1D, Flatten, Dense, MaxPooling1D, Dropout, SimpleRNN, BatchNormalization
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split   
@@ -37,8 +34,7 @@ def get_csv():
     print(len(gait_data_list[0]))
     print(len(stride_length_data_list))
 
-    return np.array(gait_data), np.array(stride_length_data)
-
+    return np.array(gait_data_list), np.array(stride_length_data_list)
 
 
 if __name__ == '__main__':
@@ -47,33 +43,39 @@ if __name__ == '__main__':
 
     gait_data = gait_data.reshape(-1,136,1)
     stride_length_data.squeeze()
+    print(gait_data.shape)
+    x_train, x_test, y_train, y_test = train_test_split(gait_data, stride_length_data, test_size=0.2, shuffle=True)    
     
-    x_train, x_test, y_train, y_test = train_test_split(gait_data, stride_length_data, test_size=0.2, shuffle=False)    
-    
-
 
     model = tf.keras.Sequential()
-    model.add(Conv1D(filters=128, kernel_size=8, padding='same', activation='relu', input_shape=(136,1))) #입력데이터 한줄에 136개, 총 558줄
-    model.add(MaxPooling1D(2))
-    model.add(Conv1D(filters=128, kernel_size=6, padding='same', activation='relu'))
-    model.add(MaxPooling1D(2))
-    model.add(Conv1D(filters=128, kernel_size=4, padding='same', activation='relu'))
-    model.add(MaxPooling1D(2))
-    model.add(Conv1D(filters=128, kernel_size=2, padding='same', activation='relu'))
-    model.add(MaxPooling1D(2))
+    model.add(Conv1D(filters=1024, kernel_size=4, padding='same', activation='elu', input_shape=(136,1))) #입력데이터 한줄에 136개, 총 558줄
+    model.add(Conv1D(filters=512, kernel_size=2, padding='same', activation='elu'))
+    model.add(Dense(1024, activation='elu'))
     model.add(Flatten())
-    model.add(Dense(136, activation='relu'))
-    model.add(Dense(136, activation='relu'))
-    model.add(Dense(136, activation='relu'))
-    model.add(Dense(136, activation='relu'))
+    model.add(Dense(1024, activation='elu'))
+    model.add(Dense(1024, activation='elu'))
+    model.add(Dense(1024, activation='elu'))
+    model.add(Dense(1024, activation='elu'))
     model.add(Dense(1, activation=None))
 
-    adam= tf.keras.optimizers.Adam(lr=0.0001)
 
-    model.compile(optimizer=adam,
-              loss='mse',
-              metrics=['mae'])
 
+    #RNN
+    # model.add(SimpleRNN(1024, input_shape=(136,1), return_sequences=True))
+    # model.add(SimpleRNN(512, input_shape=(136,1), return_sequences=True))
+    # model.add(SimpleRNN(256, input_shape=(136,1), return_sequences=True))
+    # model.add(SimpleRNN(128, input_shape=(136,1), return_sequences=True))
+    # model.add(Flatten())
+    # model.add(Dense(136, activation='relu'))
+    # model.add(Dense(136, activation='relu'))
+    # model.add(Dense(136, activation='relu'))
+    # model.add(Dense(136, activation='relu'))
+    # model.add(Dense(1, activation=None))
+
+
+    model.summary()
+    adam= tf.keras.optimizers.Adagrad(lr=0.001)
+    model.compile(optimizer=adam, loss='mse', metrics=['mae'])
 
     model.fit(x_train, y_train, epochs=500, shuffle=True, batch_size = 16)
 
@@ -86,8 +88,8 @@ if __name__ == '__main__':
       y_testdata.append(y_test[i][0])
   
     
-    print(y_testdata)
-    print(y_pred)
+    print(len(y_testdata))
+    print(len(y_pred))
 
     print("save end")
 
