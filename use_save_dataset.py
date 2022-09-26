@@ -1,13 +1,13 @@
 
 
-from tensorflow.keras.layers import Conv1D, Flatten, Dense, MaxPooling1D, Dropout, LSTM, BatchNormalization , Conv2D, MaxPooling2D
+from tensorflow.keras.layers import Conv1D, Flatten, Dense, MaxPooling1D, Dropout, LSTM, Conv2D, MaxPooling2D
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split   
 import tensorflow as tf
 from sklearn.metrics import mean_absolute_error, r2_score
 import tensorflow.keras.regularizers as reg
-from sklearn.preprocessing import MinMaxScaler, StandardScaler , RobustScaler 
+from sklearn.preprocessing import MinMaxScaler, StandardScaler , RobustScaler
 from tensorflow.keras.layers import BatchNormalization as BN
 
 
@@ -30,7 +30,7 @@ def get_csv():
     global input_dataset
 
     x_train_df = pd.read_excel(x_train_data_path, skiprows = 0)  
-    x_test_df = pd.read_excel(x_train_data_path, skiprows = 0)  
+    x_test_df = pd.read_excel(x_test_data_path, skiprows = 0)  
     y_train_df = pd.read_excel(y_train_data_path, skiprows = 0)  
     y_test_df = pd.read_excel(y_test_data_path, skiprows = 0)  
 
@@ -68,7 +68,7 @@ if __name__ == '__main__':
     x_train = x_train.reshape(-1,375,1)
     y_train.squeeze()
 
-
+    print(x_train[0])
     print(x_train.shape)    #(446, )
     print(y_train.shape)    #(446, 375, 1)
 
@@ -76,15 +76,15 @@ if __name__ == '__main__':
     # x_train, x_test, y_train, y_test = train_test_split(gait_data, stride_length_data, test_size=0.2, shuffle=True)    
 
     model = tf.keras.Sequential()
-    model.add(Conv1D(filters=512, kernel_size=2,padding='same', activation='selu', input_shape=(375,1)))
+    model.add(Conv1D(filters=1024, kernel_size=2,padding='same', activation='selu', input_shape=(375,1)))
     model.add(BN())
     model.add(MaxPooling1D(2))
-    model.add(Conv1D(filters=256, kernel_size=8, padding='same', activation='selu')) #입력데이터 한줄에 136개, 총 558줄
-    model.add(Conv1D(filters=256, kernel_size=6, padding='same', activation='selu'))
+    model.add(Conv1D(filters=1024, kernel_size=8, padding='same', activation='selu')) #입력데이터 한줄에 136개, 총 558줄
+    model.add(Conv1D(filters=1024, kernel_size=6, padding='same', activation='selu'))
     model.add(BN())
     model.add(MaxPooling1D(2))
-    model.add(Conv1D(filters=128, kernel_size=4, padding='same', activation='selu'))
-    model.add(Conv1D(filters=128, kernel_size=2, padding='same', activation='selu'))
+    model.add(Conv1D(filters=512, kernel_size=4, padding='same', activation='selu'))
+    model.add(Conv1D(filters=256, kernel_size=2, padding='same', activation='selu'))
     model.add(BN())
     model.add(MaxPooling1D(2))
     model.add(Dense(1024, activation='selu'))
@@ -95,16 +95,41 @@ if __name__ == '__main__':
     model.add(Dense(1, activation=None))
     model.summary()
 
+    # model = tf.keras.Sequential()
+    # model.add(Conv2D(filters=64, kernel_size=(3,3), padding='same', activation='selu', input_shape = (3,125,1))) #입력데이터 한줄에 125개, 총 558줄
+    # model.add(Conv2D(filters=64, kernel_size=(3,3), padding='same', activation='selu'))
+    # model.add(BN())
+    # model.add(MaxPooling2D(2,2))
+    # model.add(Conv2D(filters=128, kernel_size=(3,3), padding='same', activation='selu'))
+    # model.add(Conv2D(filters=128, kernel_size=(3,3), padding='same', activation='selu'))
+    # model.add(BN())
+    # model.add(MaxPooling2D(1,2))
+    # model.add(Conv2D(filters=256, kernel_size=(2,2), padding='same', activation='selu'))
+    # model.add(Conv2D(filters=256, kernel_size=(2,2), padding='same', activation='selu'))
+    # model.add(BN())
+    # model.add(MaxPooling2D(1,2))
+    # model.add(Flatten())
+    # model.add(Dense(1024, activation='selu'))
+    # model.add(BN())
+    # model.add(Dense(1024, activation='selu'))
+    # model.add(BN())
+    # model.add(Dense(1024, activation='selu'))
+    # model.add(BN())
+    # model.add(Dense(1, activation=None))
+    # model.summary()
+
+
     adam= tf.keras.optimizers.Adam(lr=0.0001)
-    
-        
+      
     # callback = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=3)
 
     model.compile(optimizer=adam, loss='mse', metrics=['mae'])
-    model.fit(x_train, y_train, epochs= 300, shuffle=True, batch_size = 32)
+    model.fit(x_train, y_train, epochs= 500, shuffle=False, batch_size = 16)
 
+    print(x_test.shape)
     x_test = x_test.reshape(-1,375,1)
     y_test.squeeze()
+    print('x_test: ', len(x_test))
 
     y_pred = model.predict(x_test)
     y_pred = y_pred.squeeze()
@@ -115,8 +140,8 @@ if __name__ == '__main__':
         y_testdata.append(y_test[i][0])
 
     
-    print(y_testdata)
-    print(y_pred)
+    print(len(y_testdata))
+    print(len(y_pred))
 
     print("save end")
 
