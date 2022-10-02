@@ -92,6 +92,38 @@ def make_1d_cnn(model):
 
     return model
 
+
+def make_1d_cnn_lstm(model):
+    model.add(Conv1D(filters=512, kernel_size=2,padding='same', activation='selu', input_shape=(375,1)))
+    model.add(BN())
+    model.add(MaxPooling1D(2))
+    model.add(Conv1D(filters=512, kernel_size=8, padding='same', activation='selu')) #입력데이터 한줄에 136개, 총 558줄
+    model.add(Conv1D(filters=512, kernel_size=6, padding='same', activation='selu'))
+    model.add(BN())
+    model.add(MaxPooling1D(2))
+    model.add(Conv1D(filters=512, kernel_size=4, padding='same', activation='selu'))
+    model.add(Conv1D(filters=512, kernel_size=2, padding='same', activation='selu'))
+    model.add(BN())
+    model.add(MaxPooling1D(2))
+    model.add(LSTM(15, activation='elu', recurrent_activation= 'hard_sigmoid', return_sequences=True))
+    model.add(Dropout(0.01))
+    model.add(LSTM(5, activation='elu', recurrent_activation= 'hard_sigmoid'))
+    model.add(Dropout(0.01))
+    model.add(Flatten())
+    model.add(Dense(1024, activation='selu'))
+    model.add(Dense(1024, activation='selu'))
+    model.add(Dense(1024, activation='selu'))
+    model.add(Dense(1024, activation='selu'))
+    model.add(Dense(1024, activation='selu'))
+    model.add(Dense(1024, activation='selu'))
+    model.add(Dense(1024, activation='selu'))
+    model.add(Dense(1024, activation='selu'))
+    model.add(Dense(1024, activation='selu'))
+    model.add(Dense(1, activation=None))
+
+    return model 
+
+
 def make_lstm(model):
     model.add(LSTM(16, activation='elu', recurrent_activation= 'hard_sigmoid', return_sequences=True, input_shape=(375,1) ))
     model.add(Dropout(0.01))
@@ -162,6 +194,9 @@ if __name__ == '__main__':
 
     #LSTM 
     model = make_lstm(model)
+
+    #CNN-LSTM
+    model=make_1d_cnn_lstm(model)
 
     # #RNN 
     # model = make_rnn(model)
