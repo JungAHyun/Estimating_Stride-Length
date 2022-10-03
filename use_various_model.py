@@ -1,6 +1,6 @@
 
 
-from tensorflow.keras.layers import Conv1D, Flatten, Dense, MaxPooling1D, Dropout, LSTM, Conv2D, MaxPooling2D, SimpleRNN
+from tensorflow.keras.layers import Conv1D, Flatten, Dense, MaxPooling1D, Dropout, LSTM, Conv2D, MaxPooling2D, SimpleRNN, GRU
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split   
@@ -40,6 +40,27 @@ def get_csv():
     y_test_data = y_test_df.iloc[:, 1:].to_numpy()
 
     return np.array(x_train_data), np.array(x_test_data) ,np.array(y_train_data), np.array(y_test_data)
+
+
+def make_GRU(model):
+    model.add(GRU(8, activation='elu', recurren_activation= 'hard_sigmoid', return_sequences=True, input_shape=(375,1) ))
+    model.add(Dropout(0.01))
+    model.add(GRU(4, activation='elu', recurrent_activation= 'hard_sigmoid'))
+    model.add(Dropout(0.01))
+    model.add(Flatten())
+    model.add(Dense(1024, activation='selu'))
+    model.add(Dense(1024, activation='selu'))
+    model.add(Dense(1024, activation='selu'))
+    model.add(Dense(1024, activation='selu'))
+    model.add(Dense(1024, activation='selu'))
+    model.add(Dense(1024, activation='selu'))
+    model.add(Dense(1024, activation='selu'))
+    model.add(Dense(1024, activation='selu'))
+    model.add(Dense(1024, activation='selu'))
+    model.add(Dense(1, activation=None))
+    
+    return model 
+
 
 def make_rnn(model):
     model = tf.keras.Sequential()
