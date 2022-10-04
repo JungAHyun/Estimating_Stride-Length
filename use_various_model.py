@@ -126,9 +126,9 @@ def make_1d_cnn_lstm(model):
     model.add(Conv1D(filters=512, kernel_size=2, padding='same', activation='selu'))
     model.add(BN())
     model.add(MaxPooling1D(2))
-    model.add(LSTM(15, activation='elu', recurrent_activation= 'hard_sigmoid', return_sequences=True))
+    model.add(LSTM(16, activation='elu', recurrent_activation= 'hard_sigmoid', return_sequences=True))
     model.add(Dropout(0.01))
-    model.add(LSTM(5, activation='elu', recurrent_activation= 'hard_sigmoid'))
+    model.add(LSTM(8 activation='elu', recurrent_activation= 'hard_sigmoid'))
     model.add(Dropout(0.01))
     model.add(Flatten())
     model.add(Dense(1024, activation='selu'))
@@ -221,6 +221,9 @@ if __name__ == '__main__':
 
     # #RNN 
     # model = make_rnn(model)
+    
+    #GRU
+    # model = make_GRU(model)
 
     #1D-CNN
     # model = make_1d_cnn(model)
