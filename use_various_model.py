@@ -222,13 +222,13 @@ if __name__ == '__main__':
     # #RNN 
     # model = make_rnn(model)
     
-    #GRU
+    # GRU
     # model = make_GRU(model)
 
-    #1D-CNN
+    # 1D-CNN
     # model = make_1d_cnn(model)
 
-    #2D-CNN
+    # 2D-CNN
     # model =make _2d_cnn(model)
 
     model.summary()
